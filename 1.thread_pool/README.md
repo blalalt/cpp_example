@@ -268,8 +268,8 @@ bind(_Func&& __f, _BoundArgs&&... __args)
 
 * 允许同一 bind 表达式中的多重占位符（例如多个 _1 ），但结果仅若对应参数（ u1 ）是左值或不可移动右值才良好定义。
 
-## 9. Move 和 Forward
-
+## 9. Move 和 Forward 万能引用等
+> https://blog.csdn.net/u012630961/article/details/81016126 很赞的文章，推荐
 #### 引用折叠
 * A& & 折叠成 A&
 * A& && 折叠成 A&

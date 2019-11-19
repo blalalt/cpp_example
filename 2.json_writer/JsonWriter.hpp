@@ -37,18 +37,66 @@ namespace jw {
         }
 
         // 缩进相关函数
+        int getInitialIndentDepth() const {return this->initialIndentDepth;}
+        void setInitialIndentDepth(int depth) {this->initialIndentDepth = depth;}
 
+        const char* getIndent() const {return this->indent;}
+        void setIndent(const char* in) {this->indent=in;}
 
         // 布局相关函数, 布局其实就是左右的空格控制
+        const char* getContainerPadding() const {return this->containerPadding;}
+        void setContainerPadding(const char* pad) {this->containerPadding=pad;}
+
+        const char* getkeyPaddingLeft() const {return this->keyPaddingLeft;}
+        void setKeyPaddingLeft(const char* pad) {this->keyPaddingLeft=pad;}
+
+        const char* getKeyPaddingRight() const {return this->keyPaddingRight;}
+        void setKeyPaddingRight(const char* pad) {this->keyPaddingRight=pad;}
+
+        // 压缩输出，减少空格和换行
+        void configCompressedOut();
+
+        // 输出函数
+        void writerChar(const char c);
+        void writerString(const char* str);
+        void startChild(bool iskey=false);
+        void startContainer(ContainerType type, ContainerLayout layout);
+        void endContainer();
+
         
+        void Key(const char* key);
+        void NullValue();
+        void KeyNullValue(const char* key) {Key(key); NullValue();}
 
+        void startArray(ContainerLayout layout) {this->startContainer(ContainerType::ARRAY, layout);};
+        void endArray() {this->endContainer();}
+        void startObject(ContainerLayout layout) {this->startContainer(ContainerType::OBJECT, layout);}
+        void endObject() {this->endContainer();}
 
+        template<typename T>
+        void Value(T value) {startChild(); Wirte() << value;}
+        template<typename T>
+        void KeyValue(const char* key, T value) {Key(key); Value(value);}
     private:
         std::ostream* writer{nullptr};
 
         // 使用 stack 来存储 json 对象的深度，这个深度被用来控制打印输出 json 时的格式
         // ：比如标点符号；缩进对齐；换行
         std::stack<Container*> depth;
+        
+        // 缩进
+        int initialIndentDepth{0};
+        const char* indent{"  "};
+
+        // 布局
+        const char* containerPadding{" "};
+        const char* keyPaddingLeft{""};
+        const char* keyPaddingRight{" "};
+
+        ContainerLayout defaultLayout{ContainerLayout::MULTI_LINE};
+        bool forceDefaultLayout{false};
+
+        void Indent();
     };
 
 }

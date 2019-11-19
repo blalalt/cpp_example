@@ -59,4 +59,17 @@ struct Aspect: NonCopyable{
         m_func(std::forward<Args> (args)...);
         aspect.After(std::forward<Args>(args)...);
     }
+
+    template<typename Head, typename ... Tail>
+    void Invoke(Args&& ... args, Head&& headAspect, Tail&& tailAspect){
+        headAspect.Before(std::forward<Args>(args)...);
+        Invoke(std::forward<Args>(args)..., std::forward<Tail>(tailAspect)...);
+        headAspect.After(std::forward<Args>(args)...);
+    }
+private:
+    Func m_func; // 被织入的函数
 };
+
+
+template<typename Head, typename ... Args>
+void Invoke()

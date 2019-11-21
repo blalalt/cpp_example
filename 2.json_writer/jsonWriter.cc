@@ -11,6 +11,7 @@ namespace jw {
 
     // 元素在开始和结束时需要都函数来操作，分别为 StartContainer 和 EndContainer , 
     // Container 是指对象或者数组，如果是数组就用 '[]' ,对象用‘{}’
+    // 
     void JsonWriter::startContainer(ContainerType type, ContainerLayout layout) {
         if (this->forceDefaultLayout) {
             layout = this->defaultLayout;

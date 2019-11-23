@@ -39,25 +39,25 @@ struct Aspect: NonCopyable{
     template<typename T>
     typename std::enable_if_t<has_member_Before<T, Args...>::value && has_member_After<T, Args...>::value> //返回类型
     Invoke(Args&&... args, T&& aspect) {
-        aspect.Before(std::forward<Args> args...);
-        m_func(std::forward<Args> (args)...);
-        aspect.After(std::forward<Args>(args)...);
+        aspect.Before(std::forward<Args> args...); // 解包
+        m_func(std::forward<Args> (args)...); // 解包
+        aspect.After(std::forward<Args>(args)...); // 解包
     }
 
     // 2. Before
     template<typename T>
     typename std::enable_if_t<has_member_Before<T, Args...>::value> //返回类型
     Invoke(Args&&... args, T&& aspect) {
-        aspect.Before(std::forward<Args> args...);
-        m_func(std::forward<Args> (args)...);
+        aspect.Before(std::forward<Args> args...); // 解包
+        m_func(std::forward<Args> (args)...); // 解包
     }
 
     // 3. After 
     template<typename T>
     typename std::enable_if_t<has_member_After<T, Args...>::value> //返回类型
     Invoke(Args&&... args, T&& aspect) {
-        m_func(std::forward<Args> (args)...);
-        aspect.After(std::forward<Args>(args)...);
+        m_func(std::forward<Args> (args)...); // 解包
+        aspect.After(std::forward<Args>(args)...); // 解包
     }
 
     template<typename Head, typename ... Tail>

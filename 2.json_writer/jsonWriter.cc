@@ -30,6 +30,23 @@ namespace jw {
     }
 
     void JsonWriter::endContainer() {
-        
+        auto* container = depth.top();
+        depth.pop();
+
+        if (container->childCount > 0) {
+            // 如果还有子节点
+
+            if (container->layout == ContainerLayout::MULTI_LINE) {
+                // 多行格式
+                Write() << std::endl;
+                Indent();
+            } else {
+                // 单行
+                Write() << containerPadding;
+            }
+        }
+
+        // 输出结尾符号
+        Write() << (container->type == ContainerType::ARRAY ? "]" : "}");
     }
 }

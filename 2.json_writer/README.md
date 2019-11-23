@@ -82,3 +82,13 @@ JSON 数组在方括号中书写：
 * jsoncpp
 * JSON++
 
+
+## 3. error实参不依赖模板参数
+Write()不依赖模板参数T，为无依赖名; B <T> 依赖模板参数，为依赖名。
+
+编译原则：在查找无依赖名Write()时，编译器并不会在依赖类B <T> 中查找。
+
+因此，编译器找不到函数Write()。
+#### 解决办法
+1. 将Write() -> this->Wirte()
+2. 将Write() -> JsonWirter<T>::Wirte()

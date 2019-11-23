@@ -57,24 +57,29 @@ namespace jw {
         void configCompressedOut();
 
         // 输出函数
-        void writerChar(const char c);
-        void writerString(const char* str);
+        void writeChar(const char c);
+        void writeString(const char* str);
         void startChild(bool iskey=false);
         void startContainer(ContainerType type, ContainerLayout layout);
         void endContainer();
 
-        
-        void Key(const char* key);
-        void NullValue();
+        // 新加一个键
+        void Key(const char* key) {startChild(true); writeString(key); Write() << keyPaddingLeft << ":" << keyPaddingRight;};
+        void NullValue() { startChild(); Write() << "null"; };
         void KeyNullValue(const char* key) {Key(key); NullValue();}
 
-        void startArray(ContainerLayout layout) {this->startContainer(ContainerType::ARRAY, layout);};
+        void startArray(ContainerLayout layout=ContainerLayout::INHERIT) {this->startContainer(ContainerType::ARRAY, layout);};
+        void startShortArray () { startContainer(ContainerType::ARRAY, ContainerLayout::SINGLE_LINE); }
         void endArray() {this->endContainer();}
-        void startObject(ContainerLayout layout) {this->startContainer(ContainerType::OBJECT, layout);}
+        void startObject(ContainerLayout layout=ContainerLayout::INHERIT) {this->startContainer(ContainerType::OBJECT, layout);}
+        void startShortObject () { startContainer(ContainerType::OBJECT, ContainerLayout::SINGLE_LINE); }
         void endObject() {this->endContainer();}
 
         template<typename T>
-        void Value(T value) {startChild(); Wirte() << value;}
+        void Value(T value) {startChild(); this->Write() << value;}
+
+        
+
         template<typename T>
         void KeyValue(const char* key, T value) {Key(key); Value(value);}
     private:

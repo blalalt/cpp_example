@@ -60,3 +60,55 @@ function method()
 
 
 ## 2. std::map
+
+
+#### 初始化
+1. 直接赋值
+```c++
+map<string, int> m;
+m["a"] = 2;
+```
+2. insert添加
+```c++
+map<string, int> m;
+m.insert(make_pair("a", 2));
+m.insert(pair<string, int>("a", 2));
+```
+3. 列表初始化
+```c++
+map<string,int> m = {
+    {"s1",1}, {"s2",2}, {"s3",3}
+};
+```
+
+#### 操作
+```c++
+// 修改
+
+```
+
+## 3. std::pair
+
+pair是将2个数据组合成一个数据，当需要这样的需求时就可以使用pair，如stl中的map就是将key和value放在一起来保存。另一个应用是，当一个函数需要返回2个数据的时候，可以选择pair。 pair的实现是一个结构体，主要的两个成员变量是first second 因为是使用struct不是class，所以可以直接使用pair的成员变量。
+
+#### pair 的构造
+1. ``template pair make_pair(T1 a, T2 b) { return pair(a, b); }``
+```c++
+std::make_pair(1, 1.1);
+```
+
+2. ``template <class T1, class T2> struct pair``
+```  c++   
+pair<int, double> p1;  //使用默认构造函数
+pair<int, double> p2(1, 2.4);  //用给定值初始化
+pair<int, double> p3(p2);  //拷贝构造函数
+```
+
+#### 操作
+```  c++   
+pair<int, double> p(1, 2.4); 
+p.first == 1; // 取第一个元素
+p.second == 2; // 取第二个元素
+pair<int, double> p1; // 赋值
+p1 = make_pair(1, 1.1);
+```

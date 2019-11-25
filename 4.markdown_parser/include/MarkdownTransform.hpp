@@ -1,5 +1,5 @@
-#ifndef MARKDOWNTRANSFORM
-#define MARKDOWNTRANSFORM
+#ifndef __MARKDOWNTRANSFORM
+#define __MARKDOWNTRANSFORM
 
 #include <string>
 #include <vector>
@@ -19,7 +19,11 @@ private:
     // Token 枚举 和 html 元素
     std::map<std::string, std::pair<std::string, std::string>> ht {
         {"nul", std::make_pair("", "")},
-        
+        {"p", std::make_pair("<p>", "</p>")},
+        {"href", std::make_pair("", "")},
+        {"ul", std::make_pair("<ul>", "</ul>")},
+        {"ol", std::make_pair("<ol>", "</ol>")},
+        {"li", std::make_pair("<li>", "</li>")}
     };
     
     // markdown 的内容和目录
@@ -28,4 +32,4 @@ private:
 
 
 
-#endif MARKDOWNTRANSFORM
+#endif __MARKDOWNTRANSFORM

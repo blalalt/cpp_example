@@ -7,15 +7,26 @@
 #include <utility>
 #include <new>
 
+using string = std::string;
+const int MAXLENGTH = 10000;
+
 // mkdown 和 html具有类似的dom树结构，因此我们需要先实现一个树结构
 struct Cnode {
     // 保存目录的结构
-    std::vector<Cnode>
+    std::vector<Cnode*> ch;
+    string heading;
+    string tag;
+
+    Cnode(std::string_view hd): heading{hd} {}
 };
 
 struct node {
     // 保存正文内容的结构
+    string type; // 节点代表的类型
+    std::vector<node*> ch;
+    string elem[3]; // 存放3个属性：1.显示的内容 2.保存链接 3.保存title
 
+    node(std::string_view _type): type{_type} {};
 };
 
 class MarkDownTransform {
@@ -23,9 +34,21 @@ public:
     using ss_p = std::pair<std::string, std::string>;
     MarkDownTransform(const std::string &filename);
 
-    std::string getTOC() {return TOC;}
-    std::string getContent() {return content;}
+    std::string GetTOC() {return TOC;}
+    std::string GetContent() {return content;}
     ~MarkDownTransform() {}
+
+private: 
+    // 内部函数
+
+    // 处理每行开始处的空格和TAB
+    std::pair<int, char*> Start(char *src);
+
+    // 行类型判断
+    std::pair<string, char*> JudgeType(char *src);
+
+    // 类型获取
+    inline bool IsHeading(node *v) {return v->type == }
 
 private:
     // Token 枚举 和 html 元素
@@ -55,6 +78,14 @@ private:
     
     // markdown 的内容和目录
     std::string content, TOC; 
+
+    // 
+    node *root, *now;
+    Cnode *root; 
+
+    char s[MAXLENGTH]; // 缓存要处理的行
+
+    int cntTag = 0; // 索引
 };
 
 

@@ -112,4 +112,15 @@ p.second == 2; // 取第二个元素
 pair<int, double> p1; // 赋值
 p1 = make_pair(1, 1.1);
 ```
-TODO
+
+
+## 4. std::string_view 
+当字符串数据的所有权已经确定(譬如由某个string对象持有),并且你只想访问(而不修改)他们时,使用 std::string_view 可以避免字符串数据的复制,从而提高程序效率.
+
+优点：
+1. 能够使用``char *`` 和 ``const string&``作为参数初始化。
+2. 比 ``std::string``快
+缺点：
+1. 不能很好的处理NULL
+2. 所引用的对象要比view本身活得长。
+> https://zpjiang.me/2018/09/16/use-string-view-to-avoid-copy-cpp17/

@@ -36,3 +36,5 @@
 .idea/*
 build/*
 build
+cmake-build-debug/*
+cmake-build-debug

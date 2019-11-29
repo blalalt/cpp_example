@@ -21,7 +21,7 @@ struct Cnode {
     // 保存目录的结构
     std::vector<Cnode*> ch;
     string heading;
-    Tag tag;
+    string id; // 为了让目录能够正确跳转到正文所对应的内容，所以我们设置了 id 标签来标记这个目录所指向的内容
 
     Cnode(std::string_view hd): heading{hd} {}
 };
@@ -54,11 +54,11 @@ private:
     static std::pair<Tag, char*> JudgeType(char *src);
 
     //  给定树的深度查找节点, 列表元素内 缩进
-    static node* FindNode(int depth);
+    node* FindNode(int depth);
 
     // 插入元素
     // 插入目录
-    static void InsertCnode(Cnode *v, int x, std::string_view hd, Tag tag);
+    static void InsertCnode(Cnode *v, int x, std::string_view hd, int cntTag);
     // 插入节点
     static void InsertNode(node *v, const string &src);
 
@@ -68,10 +68,10 @@ private:
     static void MakePara(node *v);
 
     // 对树进行遍历生成正文内容
-    static void DFSNode(node *v);
+     void DFSNode(node *v);
 
     // 对目录进行遍历生成目录内容
-    static void DFSCNode(node *v);
+     void DFSCNode(node *v);
 
     // 类型获取
     static inline bool IsHeading(node *v) {

@@ -7,6 +7,7 @@
 #include <utility>
 #include <new>
 #include <cstring>
+#include <fstream>
 
 using string = std::string;
 const int MAXLENGTH = 10000;
@@ -71,7 +72,7 @@ private:
      void DFSNode(node *v);
 
     // 对目录进行遍历生成目录内容
-     void DFSCNode(node *v);
+     void DFSCNode(Cnode *v, const string& index);
 
     // 类型获取
     static inline bool IsHeading(node *v) {
@@ -150,6 +151,4 @@ private:
     int cntTag = 0; // 索引
 };
 
-
-
-#endif __MARKDOWNTRANSFORM
+#endif

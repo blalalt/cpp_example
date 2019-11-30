@@ -1,6 +1,170 @@
 #include <MarkdownTransform.hpp>
 
 MarkDownTransform::MarkDownTransform(const std::string &filename) {
+    // 初始化
+    croot = {new Cnode("")};
+    root = new node(Tag::nul);
+    now = root;
+    // 从文件流中读取文件
+    std::fstream fin{filename};
+
+    bool newpara{false}, inblock{false}; // 默认不是新的段落，默认不在代码块中
+
+    while (!fin.eof()) {
+        fin.getline(s, MAXLENGTH); // 每次处理一行
+
+        // 不在代码块 且 需要换行的情况
+        if (!inblock && IsCutline(s)) {
+            now = root;
+            now->ch.push_back(new node(Tag::hr));
+            newpara = false;
+            continue;
+        }
+
+        // 检查缩进
+        auto ps = Start(s);
+        // 不在代码块 且 无内容, 开始新的段落
+        if (!inblock && !ps.second) {
+            now = root;
+            newpara = true;
+            continue;
+        }
+
+        auto jt = JudgeType(ps.second);
+
+        // 代码块
+        if (jt.first == Tag::blockcode) {
+            inblock ? now->ch.push_back(new node(Tag::nul)) : now->ch.push_back(new node(Tag::blockcode));
+            inblock = !inblock;
+            continue;
+        }
+        if (inblock) {
+            now->ch.back()->elem[0] += string(s) + "\n"; //如果在代码块中，直接添加内容到当前节点
+            continue;
+        }
+
+        // 普通段落
+        if (jt.first == Tag::p) {
+            if (now == root) {
+                now = FindNode(ps.first);
+                now->ch.push_back(new node(Tag::p));
+                now = now->ch.back();
+            }
+            bool flag = false;
+
+            if (newpara && !now->ch.empty()) {
+                node *ptr = nullptr;
+                for (auto i: now->ch) {
+                    if (i->type == Tag::nul) {
+                        ptr = i;
+                    }
+                    if (ptr) { MakePara(ptr); }
+                    flag = true;
+                }
+            }
+
+            if (flag) {
+                now->ch.push_back(new node(Tag::p));
+                now = now->ch.back();
+            }
+
+            now->ch.push_back(new node(Tag::nul));
+            InsertNode(now->ch.back(), string(jt.second));
+            newpara = false;
+            continue;
+        }
+        now = FindNode(ps.first);
+        // 标题
+        if ( h1 <= jt.first && h6 >= jt.first ) {
+            now->ch.push_back(new node(jt.first));
+            now->ch.back()->elem[0] = "tag" + std::to_string(++cntTag);
+            // 插入节点
+            InsertNode(now->ch.back(), string(jt.second));
+            // 插入目录
+            InsertCnode(croot, jt.first-h1+1, string(jt.second), cntTag);
+        }
+
+        // 无序列表
+        if (jt.first == Tag::ul) {
+            if (now->ch.empty() || now->ch.back()->type!=ul) {
+                now->ch.push_back(new node(Tag::ul));
+            }
+
+            now = now->ch.back();
+            bool flag = false;
+
+            if (newpara && !now->ch.empty()) {
+                node *ptr = nullptr;
+                for (auto i: now->ch) {
+                    if (i->type == Tag::li) {
+                        ptr = i;
+                    }
+                }
+                if (!ptr) {MakePara(ptr);}
+                flag = true;
+
+            }
+            now->ch.push_back(new node(Tag::li));
+            now = now->ch.back();
+            if (flag) {
+                now->ch.push_back(new node(Tag::p));
+                now = now->ch.back();
+            }
+            InsertNode(now, string(jt.second));
+        }
+
+        // 有序列表
+        if (jt.first == Tag::ol) {
+            if (now->ch.empty() || now->ch.back()->type!=ul) {
+                now->ch.push_back(new node(Tag::ul));
+            }
+
+            now = now->ch.back();
+            bool flag = false;
+
+            if (newpara && !now->ch.empty()) {
+                node *ptr = nullptr;
+                for (auto i: now->ch) {
+                    if (i->type == Tag::li) {
+                        ptr = i;
+                    }
+                }
+                if (!ptr) {MakePara(ptr);}
+                flag = true;
+
+            }
+            now->ch.push_back(new node(Tag::li));
+            now = now->ch.back();
+            if (flag) {
+                now->ch.push_back(new node(Tag::p));
+                now = now->ch.back();
+            }
+            InsertNode(now, string(jt.second));
+        }
+
+        // 引用
+        if (jt.first == Tag::quote) {
+
+            // 没有子节点 或者 最后一个子节点不是引用节点的话 新建一个引用节点
+            if (now->ch.empty() || now->ch.back()->type!=Tag::quote) {
+                now->ch.push_back(new node(Tag::quote));
+            }
+            now = now->ch.back();
+            if (newpara || now->ch.empty()) {now->ch.push_back(new node(Tag::p));}
+            InsertNode(now->ch.back(), string(jt.second));
+        }
+
+        newpara = false;
+    }
+
+    fin.close();
+
+    DFSNode(root); // 遍历DOM树，生成html文档
+    TOC += "<ul>\n";
+    for (size_t i=0; i<croot->ch.size(); i++) {
+        DFSCNode(croot->ch.at(i), std::to_string(i+1) + ".");
+    }
+    TOC += "</ul>\n";
 }
 
 // 开始解析一行中开始的空格和 Tab
@@ -27,13 +191,61 @@ std::pair<int, char *> MarkDownTransform::Start(char *src) {
     return std::make_pair(0, nullptr);
 }
 
-void MarkDownTransform::DFSCNode(node *v) {
+// 目录的展示方式是需要使用无需列表的形式被展示在 HTML 中
+void MarkDownTransform::DFSCNode(Cnode *v, const string& index) {
 
+    TOC += "<li>\n";
+    TOC += "<a href=\"#" + v->id + "\">" + index + " " + v->heading + "</a>\n";
+    size_t n = v->ch.size();
+    if (n) {
+        TOC += "<ul>\n";
+        for (size_t i=0; i<n; i++) {
+            DFSCNode(v->ch.at(i), index + "." + std::to_string(i+1)); // 2-> 2.1 2.2
+        }
+        TOC += "</ul>\n";
+    }
+    TOC += "</li>\n";
 }
 
 // 对正文内容进行深度遍历
 void MarkDownTransform::DFSNode(node *v) {
+    if (v->type == Tag::p && v->elem[0].empty() && v->ch.empty()) { return;}
+    auto tag = ht.at(static_cast<int>(v->type));
+    content += tag.first;
 
+    bool flag = true;
+
+    // 处理标题, 支持用目录进行跳转
+    if (IsHeading(v)) {
+        content += "id=\"" + v->elem[0] + "\">";
+        flag = false;
+    }
+
+    // 图片
+    if (IsImage(v)) {
+        content += "<img alt=\"" + v->elem[0] + "\" src=\"" + v->elem[1] + "\" title=\""+v->elem[2]+"\"/>";
+        flag = false;
+    }
+
+    // 超链接
+    if (IsHref(v)) {
+        content += "<a href=\""+v->elem[1] +"\" title=\"" + v->elem[2] +"\">" + v->elem[0] + "</a>";
+        flag = false;
+    }
+
+    // 以上三者都不是 则直接添加内容
+    if (flag) {
+        content += v->elem[0];
+        flag = false;
+    }
+
+    // 递归遍历所有子节点
+    for (auto &c: v->ch) {
+        DFSNode(c);
+    }
+
+    // 拼接结束标签
+    content += tag.second;
 }
 
 // 生成一个 段落节点 paragraph
@@ -245,7 +457,7 @@ std::pair<Tag, char *> MarkDownTransform::JudgeType(char *src) {
 //  Cnode 和 node 的两个指针 vector
 template<typename T>
 void MarkDownTransform::destory(T *v) {
-    for (size_t i=0; i<MarkDownTransform::v->ch.size(); i++) {
+    for (size_t i=0; i<v->ch.size(); i++) {
         destory(v->ch[i]); // 递归的 释放节点
     }
     delete v;

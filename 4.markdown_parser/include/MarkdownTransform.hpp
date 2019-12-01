@@ -8,6 +8,7 @@
 #include <new>
 #include <cstring>
 #include <fstream>
+#include <iostream>
 
 using string = std::string;
 const int MAXLENGTH = 10000;
@@ -90,6 +91,8 @@ private:
     void destory(T *v);
 
 private:
+    // nul = 0,
+    //        p, href, ul, ol, li, em, strong, hr, br, img, quote, h1, h2, h3, h4, h5, h6, blockcode, code
     // Token 枚举 和 html 元素
     std::vector<std::pair<string, string>> ht {
         std::make_pair("", ""),
@@ -102,15 +105,14 @@ private:
         std::make_pair("<strong>", "</strong>"),
         std::make_pair("<hr color=#CCCCCC  size=1 />", ""),
         std::make_pair("<br />", ""),
-        std::make_pair("<br />", ""),
         std::make_pair("", ""),
         std::make_pair("<blockquote>", "</blockquote>"),
-        std::make_pair("<h1>", "</h1>"),
-        std::make_pair("<h2>", "</h2>"),
-        std::make_pair("<h3>", "</h3>"),
-        std::make_pair("<h4>", "</h4>"),
-        std::make_pair("<h5>", "</h5>"),
-        std::make_pair("<h6>", "</h6>"),
+        std::make_pair("<h1 ", "</h1>"),
+        std::make_pair("<h2 ", "</h2>"),
+        std::make_pair("<h3 ", "</h3>"),
+        std::make_pair("<h4 ", "</h4>"),
+        std::make_pair("<h5 ", "</h5>"),
+        std::make_pair("<h6 ", "</h6>"),
         std::make_pair("<pre><code>", "</code>"),
         std::make_pair("<code>", "</code>")
     };
@@ -145,7 +147,7 @@ private:
     node *root, *now; // 内容
     Cnode *croot; // 目录
 
-    char s[MAXLENGTH]; // 缓存要处理的行
+    char s[MAXLENGTH]{}; // 缓存要处理的行
 
     // 为了让目录能够正确的索引到 HTML 的内容位置，我们不妨引入一个 cntTag 的变量进行记录
     int cntTag = 0; // 索引

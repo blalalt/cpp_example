@@ -1,6 +1,7 @@
 #include <MarkdownTransform.hpp>
 
 MarkDownTransform::MarkDownTransform(const std::string &filename) {
+    std::cout << "start to parse document." << std::endl;
     // 初始化
     croot = {new Cnode("")};
     root = new node(Tag::nul);
@@ -9,12 +10,18 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
     std::fstream fin{filename};
 
     bool newpara{false}, inblock{false}; // 默认不是新的段落，默认不在代码块中
-
+    string type{};
+    string split(40, '*');
     while (!fin.eof()) {
         fin.getline(s, MAXLENGTH); // 每次处理一行
 
+        std::cout << split << std::endl;
+        std::cout << "text: " << string(s) << std::endl;
+
         // 不在代码块 且 需要换行的情况
         if (!inblock && IsCutline(s)) {
+            type = "br";
+            std::cout << "type: " << type << std::endl;
             now = root;
             now->ch.push_back(new node(Tag::hr));
             newpara = false;
@@ -25,26 +32,33 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
         auto ps = Start(s);
         // 不在代码块 且 无内容, 开始新的段落
         if (!inblock && !ps.second) {
+            type = "new paragraph";
+            std::cout << "type: " << type << std::endl;
             now = root;
             newpara = true;
             continue;
         }
 
         auto jt = JudgeType(ps.second);
-
         // 代码块
         if (jt.first == Tag::blockcode) {
+            type = "blockcode";
+            std::cout << "type: " << type << std::endl;
             inblock ? now->ch.push_back(new node(Tag::nul)) : now->ch.push_back(new node(Tag::blockcode));
             inblock = !inblock;
             continue;
         }
         if (inblock) {
+            type = "in blockcode";
+            std::cout << "type: " << type << std::endl;
             now->ch.back()->elem[0] += string(s) + "\n"; //如果在代码块中，直接添加内容到当前节点
             continue;
         }
 
         // 普通段落
         if (jt.first == Tag::p) {
+            type = "paragraph";
+            std::cout << "type: " << type << std::endl;
             if (now == root) {
                 now = FindNode(ps.first);
                 now->ch.push_back(new node(Tag::p));
@@ -76,6 +90,7 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
         now = FindNode(ps.first);
         // 标题
         if ( h1 <= jt.first && h6 >= jt.first ) {
+            type = "heading";
             now->ch.push_back(new node(jt.first));
             now->ch.back()->elem[0] = "tag" + std::to_string(++cntTag);
             // 插入节点
@@ -86,6 +101,7 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
 
         // 无序列表
         if (jt.first == Tag::ul) {
+            type = "ul";
             if (now->ch.empty() || now->ch.back()->type!=ul) {
                 now->ch.push_back(new node(Tag::ul));
             }
@@ -115,6 +131,7 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
 
         // 有序列表
         if (jt.first == Tag::ol) {
+            type = "ol";
             if (now->ch.empty() || now->ch.back()->type!=ul) {
                 now->ch.push_back(new node(Tag::ul));
             }
@@ -144,7 +161,7 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
 
         // 引用
         if (jt.first == Tag::quote) {
-
+            type = "quote";
             // 没有子节点 或者 最后一个子节点不是引用节点的话 新建一个引用节点
             if (now->ch.empty() || now->ch.back()->type!=Tag::quote) {
                 now->ch.push_back(new node(Tag::quote));
@@ -153,10 +170,10 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
             if (newpara || now->ch.empty()) {now->ch.push_back(new node(Tag::p));}
             InsertNode(now->ch.back(), string(jt.second));
         }
-
+        std::cout << "type: " << type << std::endl;
         newpara = false;
     }
-
+    std::cout << "end parse." << std::endl;
     fin.close();
 
     DFSNode(root); // 遍历DOM树，生成html文档
@@ -211,6 +228,7 @@ void MarkDownTransform::DFSCNode(Cnode *v, const string& index) {
 void MarkDownTransform::DFSNode(node *v) {
     if (v->type == Tag::p && v->elem[0].empty() && v->ch.empty()) { return;}
     auto tag = ht.at(static_cast<int>(v->type));
+    std::cout << v->type << tag.first << std::endl;
     content += tag.first;
 
     bool flag = true;
@@ -272,6 +290,7 @@ bool MarkDownTransform::IsCutline(char *src) {
             return false;
         }
         if (*ptr == '-') {cntH++;}
+        ptr ++;
     }
     // 如果出现 --- 则需要增加一个分割线, 这时需要换行
     return (cntH >= 3);
@@ -420,9 +439,9 @@ std::pair<Tag, char *> MarkDownTransform::JudgeType(char *src) {
     char *ptr = src;
 
     // 判断是不是标题，跳过#
-    while (*ptr != '#') ptr++;
+    while (*ptr == '#') ptr++;
     // 如果出现空格，则说明是 h标签
-    if (ptr-src>0 && *ptr==' ') {
+    if (ptr != src && (*ptr==' ')) {
         Tag t = static_cast<Tag> (static_cast<int>(Tag::h1) + ptr - src - 1);
         return std::make_pair(t, ptr+1);
     }

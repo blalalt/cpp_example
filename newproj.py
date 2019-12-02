@@ -4,15 +4,14 @@ import optparse
 
 root_path = os.path.abspath('.')
 
-_cmaketxt_template = """
-cmake_minimum_required(VERSION 3.0)
+_cmaketxt_template = """cmake_minimum_required(VERSION 3.0)
 project({project_name})
 include_directories(include)
-add_executable(main src/main.cc)
+aux_source_directory(src src_list)
+add_executable({project_name} ${{src_list}})
 """
 
-_main_func = """
-#include <iostream>
+_main_func = """#include <iostream>
 
 int main() {
 

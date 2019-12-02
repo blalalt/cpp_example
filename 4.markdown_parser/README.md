@@ -124,3 +124,25 @@ p1 = make_pair(1, 1.1);
 1. 不能很好的处理NULL
 2. 所引用的对象要比view本身活得长。
 > https://zpjiang.me/2018/09/16/use-string-view-to-avoid-copy-cpp17/
+
+
+## 5. 类成员模板
+定义方式: 注意要在头文件中声明和**定义**,否则会报 reference错误.
+即如果只是在头文件中声明，而在.cc文件中定义，在编译时会报 ``undefined reference to `void MarkDownTransform::destory<node>(node*)'``
+原因：
+* 非专用模板的实现必须对使用它的翻译单元可见。
+* 编译器必须能够查看实现，以便为代码中的所有特化生成代码。
+
+解决方法：
+* 将实现移动到hpp内。
+* 如果要将其分开，请将其移动到原始标题中包含的其他hpp中
+
+```c++
+template <typename T>
+    void destory(T* v) {
+        for (size_t i=0; i<v->ch.size(); i++) {
+            destory(v->ch[i]); // 递归的 释放节点
+        }
+        delete v;
+    }
+```

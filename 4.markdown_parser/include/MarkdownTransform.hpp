@@ -25,7 +25,7 @@ struct Cnode {
     string heading;
     string id; // 为了让目录能够正确跳转到正文所对应的内容，所以我们设置了 id 标签来标记这个目录所指向的内容
 
-    Cnode(std::string_view hd): heading{hd} {}
+    explicit Cnode(std::string_view hd): heading{hd} {}
 };
 
 struct node {
@@ -34,17 +34,26 @@ struct node {
     std::vector<node*> ch;
     string elem[3]; // 存放3个属性：1.显示的内容 2.保存链接 3.保存title
 
-    node(Tag _type): type{_type} {};
+    explicit node(Tag _type): type{_type} {};
 };
 
 class MarkDownTransform {
 public:
     using ss_p = std::pair<std::string, std::string>;
-    MarkDownTransform(const std::string &filename);
+    explicit MarkDownTransform(const std::string &filename);
 
+    // 递归删除树节点
+    // undefined reference to `void MarkDownTransform::destory<node>(node*)'
+    template <typename T>
+    void destory(T* v) {
+        for (size_t i=0; i<v->ch.size(); i++) {
+            destory(v->ch[i]); // 递归的 释放节点
+        }
+        delete v;
+    }
     std::string GetTOC() {return TOC;}
     std::string GetContent() {return content;}
-    ~MarkDownTransform() {}
+    ~MarkDownTransform() { this->destory(root); this->destory(croot);};
 
 private: 
     // 内部函数
@@ -86,9 +95,7 @@ private:
         return v->type == Tag::href;
     }
 
-    // 递归删除树节点
-    template <typename T>
-    void destory(T *v);
+
 
 private:
     // nul = 0,
@@ -113,7 +120,7 @@ private:
         std::make_pair("<h4 ", "</h4>"),
         std::make_pair("<h5 ", "</h5>"),
         std::make_pair("<h6 ", "</h6>"),
-        std::make_pair("<pre><code>", "</code>"),
+        std::make_pair("<pre><code>", "</code></pre>"),
         std::make_pair("<code>", "</code>")
     };
     // std::map<std::string, std::pair<std::string, std::string>> ht {

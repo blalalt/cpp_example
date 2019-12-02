@@ -179,7 +179,7 @@ MarkDownTransform::MarkDownTransform(const std::string &filename) {
     DFSNode(root); // 遍历DOM树，生成html文档
     TOC += "<ul>\n";
     for (size_t i=0; i<croot->ch.size(); i++) {
-        DFSCNode(croot->ch.at(i), std::to_string(i+1) + ".");
+        DFSCNode(croot->ch.at(i), std::to_string(i+1));
     }
     TOC += "</ul>\n";
 }
@@ -309,7 +309,7 @@ void MarkDownTransform::InsertNode(node *v, const string &src) {
     // 如何在一个段落中处理图片和超链接的情况。这就意味着我们需要一个字符一个字符的进行判断和处理。
     // 这也是我们为什么在处理解析代码的时候，都是使用 C 风格的字符串以及字符指针来进行处理，
     // 而不是简单的使用 std::string
-    for (size_t i=0; i<n; i++) {
+    for (size_t i=0; i<src.size(); i++) {
         char ch = src[i];
 
         // 转义字符
@@ -368,7 +368,7 @@ void MarkDownTransform::InsertNode(node *v, const string &src) {
         if (ch == '[' && !incode && !inautolink && !inem && !instrong) {
             v->ch.push_back(new node(Tag::href));
             //  属性文本
-            for (i+=2; i<n-1 && src[i]!=']'; i++) {
+            for (i+=1; i<n-1 && src[i]!=']'; i++) {
                 v->ch.back()->elem[0] += std::string(1, src[i]);
             }
             i++; //src: " (" 或 "("
@@ -474,12 +474,12 @@ std::pair<Tag, char *> MarkDownTransform::JudgeType(char *src) {
 }
 
 //  Cnode 和 node 的两个指针 vector
-template<typename T>
-void MarkDownTransform::destory(T *v) {
-    for (size_t i=0; i<v->ch.size(); i++) {
-        destory(v->ch[i]); // 递归的 释放节点
-    }
-    delete v;
-}
+//template<typename T>
+//void MarkDownTransform::destory(T* v) {
+//    for (size_t i=0; i<v->ch.size(); i++) {
+//        destory(v->ch[i]); // 递归的 释放节点
+//    }
+//    delete v;
+//}
 
 

@@ -17,3 +17,7 @@ C++ 的显式类型转换除了 dynamic_cast 外，还有 static_cast, const_cas
 * static_cast: 能够将任何具有明确定义的类型转换，只要不包含底层 const，都可以使用 static_cast，由于是静态类型转换，也就没有了运行时类型转换来保证转换的安全性。
 * const_cast: 只能改变对象的底层 const 性质，不能改变表达式运算对象的类型，可以用于增加或者移除对象的 const 属性。
 * reinterpret_cast: 则能够对对象的位模式提供低层次上的重新解释。会直接将整块内存单元重新解释.
+
+
+## 3. std::intptr_t
+头文件cstdint

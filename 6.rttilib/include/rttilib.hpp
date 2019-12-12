@@ -27,7 +27,6 @@ public:
         }
         return nullptr;
     }
-
     inline bool isKindOf(std::intptr_t type) {
         return getKindOf(type) == nullptr ? false : true;
     }

@@ -13,10 +13,10 @@ class B: public RttiPort<B> {};
 class C: public RttiPort<C> {};
 class D: public RttiPort<D> {};
 class E: public RttiPort<E> {};
-class AB: public virtual A, public virtual B, public RttiPort<AB> {};
-class CD: public virtual C, public virtual D, public RttiPort<CD> {};
-class AB_CD: public virtual AB, public virtual CD, public RttiPort<AB_CD> {};
-class AB_CD_E: public virtual AB, public virtual CD, public virtual E, public RttiPort<AB_CD_E> {};
+class AB: public A, public B, public RttiPort<AB> {};
+class CD: public C, public D, public RttiPort<CD> {};
+class AB_CD: public AB, public CD, public RttiPort<AB_CD> {};
+class AB_CD_E: public AB, public CD, public E, public RttiPort<AB_CD_E> {};
 
 void test_useage() {
     std::cout.setf(std::ios::boolalpha);

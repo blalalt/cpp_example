@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.0)
+project(stl_container)
+include_directories(include)
+aux_source_directory(src src_list)
+add_executable(stl_container ${src_list})

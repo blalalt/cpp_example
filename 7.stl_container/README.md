@@ -26,3 +26,4 @@ typedef typename std::vector<T>::size_type size_type;
 * 静态成员函数
 * 嵌套类型
 typedef创建了存在类型的别名， `typename` 就是告诉编译器``std::vector<T>::size_type``是一个类型而不是一个成员。
+
